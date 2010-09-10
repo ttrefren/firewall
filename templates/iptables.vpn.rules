@@ -1,0 +1,50 @@
+* filter
+
+# Set default policies
+-P OUTPUT ACCEPT
+-P INPUT DROP
+-P FORWARD DROP
+
+# Prevent external packets from using loopback addr
+-A INPUT -i eth0 -s 127.0.0.1 -j DROP
+-A FORWARD -i eth0 -s 127.0.0.1 -j DROP
+-A INPUT -i eth0 -d 127.0.0.1 -j DROP
+-A FORWARD -i eth0 -d 127.0.0.1 -j DROP
+
+# Check source address validity on packets going out to internet
+-A FORWARD -s ! 10.0.0.0/8 -i eth1 -j DROP
+
+# Allow local loopback
+-A INPUT -s 127.0.0.1 -j ACCEPT
+-A INPUT -d 127.0.0.1 -j ACCEPT
+
+# Allow incoming pings (can be disabled)
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+# Allow services such as www and ssh (can be disabled)
+-A INPUT -p tcp --dport ssh -j ACCEPT
+
+# Allow incoming OpenVPN packets
+-A INPUT -p udp --dport 1194 -j ACCEPT
+-A INPUT -i tun+ -j ACCEPT
+-A FORWARD -i tun+ -j ACCEPT
+
+# Allow packets from private subnets
+-A INPUT -i eth1 -j ACCEPT
+-A FORWARD -i eth1 -j ACCEPT
+
+# Keep state of connections from local machine and private subnets
+-A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A FORWARD -m state --state NEW -o eth0 -j ACCEPT
+-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+COMMIT
+
+* nat
+
+# Masquerade local subnet
+# -t nat -A POSTROUTING -s 10.0.0.0/8 -o eth0 -j MASQUERADE
+-t nat -A POSTROUTING -s 10.0.0.0/8 -o eth1 -j MASQUERADE
+
+COMMIT
