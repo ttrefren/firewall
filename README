@@ -1,3 +1,6 @@
-Quick code example for blog post located here: http://code.mixpanel.com/???
+Quick code example for blog post located here: http://code.mixpanel.com/automating-your-firewall-with-django-and-fabric
 
 USAGE: python iptables.py
+
+Sample iptables templates are located in templates/
+Rendered templates are placed in rendered/
